@@ -1,19 +1,12 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const Anthropic = require('@anthropic-ai/sdk');
+import Anthropic from '@anthropic-ai/sdk';
 
-const app = express();
-const PORT = process.env.PORT || 3001;
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-const client = new Anthropic.default({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
-app.post('/api/summarize', async (req, res) => {
   try {
     const { images, subject } = req.body;
 
@@ -55,12 +48,4 @@ app.post('/api/summarize', async (req, res) => {
     console.error('Summarize error:', err.message);
     res.status(500).json({ error: err.message || 'Fehler beim Zusammenfassen.' });
   }
-});
-
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok' });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+}

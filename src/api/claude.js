@@ -1,7 +1,5 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
 export async function summarizeImages(base64Images, subject) {
-  const response = await fetch(`${API_URL}/api/summarize`, {
+  const response = await fetch('/api/summarize', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
