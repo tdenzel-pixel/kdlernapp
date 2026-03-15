@@ -1,10 +1,23 @@
-const MAX_DIMENSION = 1200;
-const QUALITY = 0.7;
+import heic2any from 'heic2any';
 
-export function compressImage(file) {
+const MAX_DIMENSION = 800;
+const QUALITY = 0.5;
+
+const HEIC_TYPES = ['image/heic', 'image/heif'];
+
+async function toJpegBlob(file) {
+  if (HEIC_TYPES.includes(file.type) || /\.hei[cf]$/i.test(file.name)) {
+    const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: QUALITY });
+    return Array.isArray(blob) ? blob[0] : blob;
+  }
+  return file;
+}
+
+export async function compressImage(file) {
+  const blob = await toJpegBlob(file);
   return new Promise((resolve, reject) => {
     const img = new Image();
-    const url = URL.createObjectURL(file);
+    const url = URL.createObjectURL(blob);
     img.onload = () => {
       URL.revokeObjectURL(url);
       let { width, height } = img;
