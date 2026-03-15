@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getSubject } from '../subjects';
 import { summarizeImages } from '../api/claude';
+import { compressImage } from '../utils/compressImage';
 import { jsPDF } from 'jspdf';
 
 function renderMarkdown(text) {
@@ -47,21 +48,9 @@ export default function Project({ projects, onAddScan, onDeleteProject, onDelete
   function handleFileChange(e) {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
-    const readers = files.map(
-      (file) =>
-        new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const dataUrl = reader.result;
-            const [header, data] = dataUrl.split(',');
-            const mediaType = header.match(/:(.*?);/)[1];
-            resolve({ data, mediaType, preview: dataUrl, name: file.name });
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        })
+    Promise.all(files.map((file) => compressImage(file))).then((results) =>
+      setImages((prev) => [...prev, ...results])
     );
-    Promise.all(readers).then((results) => setImages((prev) => [...prev, ...results]));
     e.target.value = '';
   }
 
